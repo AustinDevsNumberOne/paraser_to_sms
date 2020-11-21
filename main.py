@@ -66,7 +66,7 @@ async def nude_sort():
                         result = await loop.run_in_executor(None, detector.classify, file)
                         score = result.get(file, {}).get("unsafe", 0)
 
-                    if score and score >= 0.75:
+                    if score and score >= 0.8:
                         await move_nsfw(file)
                 except LookupError:
                     ...
