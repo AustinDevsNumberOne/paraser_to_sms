@@ -13,9 +13,16 @@ BASE_URL = "http://gs.3g.cn/D/{}/w"
 PROBABLY_MAX_RANGE = 0xffffff
 PATH_TO_SAVE = "./output"
 
+PROXY_URL = ""
+NSFW_PERCENTAGE = 0.8
+
 
 async def async_get(in_range):
-    async with aiohttp.ClientSession(headers={"content-type": "*/*"}) as client:
+    params = {"headers": {"content-type": "*/*"}}
+    if PROXY_URL:
+        params["proxy"] = PROXY_URL
+
+    async with aiohttp.ClientSession(**params) as client:
         for file_n in in_range:
             url = BASE_URL.format("{:06x}".format(file_n))
             async with client.get(aiohttp.client.URL(url, encoded=True)) as response:
@@ -47,7 +54,7 @@ async def nude_sort():
             file = f"{PATH_TO_SAVE}/{file}"
             if file in already_checked:
                 continue
-    
+
             already_checked.append(file)
             if os.path.isfile(file) and not os.path.isdir(file):
                 mime_type = mimetypes.guess_type(file)[0].split("/")[0]
@@ -66,7 +73,7 @@ async def nude_sort():
                         result = await loop.run_in_executor(None, detector.classify, file)
                         score = result.get(file, {}).get("unsafe", 0)
 
-                    if score and score >= 0.8:
+                    if score and score >= NSFW_PERCENTAGE:
                         await move_nsfw(file)
                 except LookupError:
                     ...
