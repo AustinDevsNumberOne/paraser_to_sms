@@ -45,5 +45,9 @@ async def sort():
                     await move_nsfw(file)
             except LookupError:
                 ...
+try:
+    os.makedirs(f"{PATH_TO_SAVE}/nsfw")
+except FileExistsError:
+    ...
 
 asyncio.run(sort())
