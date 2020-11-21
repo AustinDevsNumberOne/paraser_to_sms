@@ -39,7 +39,7 @@ async def main():
     for future in futures:
         await future
 
-if "output" != os.listdir("."):
+if "output" not in os.listdir("."):
     os.mkdir("output")
 
 asyncio.run(main())
