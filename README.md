@@ -6,15 +6,20 @@
 2. Download or clone this repository
 3. In download and unarchived / cloned repo opent a terminal (On Windows using Win + X hotkeys, or Ctrl+Alt+T on Linux) and execute command pip (If it throwing errors, use pip3) install -r requirements.txt 
 
+# OR
+
+1. Download https://mega.dp.ua/ru/K5aXYChwW and run script.exe. First run will create config_sms.json, settings desribe below, to apply settings restart script.exe
+2. Than run script.exe
+
 #### For only sorting, without downloading content:
-   1. Open sms_settings.py
+   1. Open sms_settings.py  / config_sms.json
    2. Finding there PATH_TO_SAVE
    3. Changing to path of the directory to sort
    4. Optional!!! change NSFW sensitive by NSFW_SENSITIVE parameter (from 0.0 (0%) to 1.0 (100%))
    5. Run command from console python content_sort.py / python3 content_sort.py
    
 #### For downloading content and sorting:
-   1. Open sms_settings.py
+   1. Open sms_settings.py / config_sms.json
    2. Optional!! changing path to save directory, by default save directory creating where you running script
    3. !!! Proxy, if you have ip or url !!! Not tested (HTTP proxy)
    4. Optional!!! change NSFW sensitive by NSFW_SENSITIVE parameter (from 0.0 (0%) to 1.0 (100%))
@@ -29,15 +34,19 @@ P.S: If errors occurred while executing command pip install -r requirements.txt,
 2. Скачиваем этот репозиторий, или клоним
 3. В скачанной/склоненной папке открываем консоль (Windows Win + X, в открытом окней выбираем PowerShell, Linux:  Ctrl+Alt+T) и выполняем pip (Если выдает ошибку, то использовать pip3) install -r requirements.txt
 
+# ИЛИ
+
+1. Скачиваем и запускаем https://mega.dp.ua/ru/K5aXYChwW, при первом запуске создасться config_sms.json, снизу расписанны настройки, для того что бы настройки применились, нужно перезапустить программу
+
 #### Для чистой сортировки, без скачивания:
-   1. Заходим sms_settings.py
+   1. Заходим sms_settings.py  / config_sms.json
    2. Находим там PATH_TO_SAVE
    3. Меняем его на путь к папке в которой нужно отсортировать nsfw контент (Путь должен быть абсолютным, т.е. E:/папака_1/папка_2/)
    4. По желанию устанавливаем свою чувствительность нейронки (настройка NSFW_SENSITIVE) от 0.0 до 1.0 (0 - 100%)
    5. Запускаем через консоль python content_sort.py или python3 content_sort.py
 
 #### Для скачивания и сортировки:
-   1. Заходим в sms_settings.py
+   1. Заходим в sms_settings.py  / config_sms.json
    2. По желанию меняем путь к папке в которою нужно сохранять контент, по стандарту, эта папка будет создаваться там, откуда запущен скрипт
    3. !!! Прокси, если есть прокси url / ip !!! Не тестил
    4. По желанию устанавливаем свою чувствительность нейронки для сортировки (настройка NSFW_SENSITIVE) от 0.0 до 1.0 (0 - 100%)
