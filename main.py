@@ -33,7 +33,7 @@ async def async_get(in_range):
 async def nude_sort():
     while True:
         await sort_function(is_already_checked=True)
-        await asyncio.sleep(30)
+        await asyncio.sleep(5)
 
 
 async def main():
