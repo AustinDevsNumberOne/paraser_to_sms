@@ -14,15 +14,15 @@ async def async_get(in_range):
     if PROXY_URL:
         params["proxy"] = PROXY_URL
 
-    async with aiohttp.ClientSession(**params) as client:
+    async with aiohttp.ClientSession() as client:
         for file_n in in_range:
             url = BASE_URL.format("{:06x}".format(file_n))
-            async with client.get(aiohttp.client.URL(url, encoded=True)) as response:
+            async with client.get(aiohttp.client.URL(url, encoded=True), **params) as response:
                 if not (200 <= response.status < 300):
                     continue
             content_url = response.real_url.query.get("u")
             if url != response.real_url and content_url:
-                async with client.get(aiohttp.client.URL(content_url, encoded=True)) as response:
+                async with client.get(aiohttp.client.URL(content_url, encoded=True), **params) as response:
                     if 200 <= response.status < 300:
                         file_type = response.content_type.split("/")[-1]
                         async with aiofiles.open(f"{PATH_TO_SAVE}/{file_n}.{file_type}", "wb+") as output:
