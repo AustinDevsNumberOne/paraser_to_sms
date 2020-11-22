@@ -5,5 +5,7 @@ PATH_TO_SAVE = "./output"
 
 PROXY_URL = ""
 
+ignored = {}
+
 WORKERS_NUMBER = 10
 NSFW_SENSITIVE = 0.8
