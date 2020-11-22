@@ -1,9 +1,10 @@
 import os
-
 import asyncio
 import mimetypes
 import math
+
 from nudenet import NudeClassifier
+
 from sms_settings import *
 
 already_checked = []
@@ -11,6 +12,7 @@ already_checked = []
 
 async def move_nsfw(file):
     try:
+        print("Moved to nsfw: {}".format(file))
         os.rename(file, f"{PATH_TO_SAVE}/nsfw/{file.rsplit('/')[-1]}")
     except FileExistsError:
         print(f"File {file} already in nswf")
@@ -31,7 +33,7 @@ async def sort_algorithm(files, loop, detector, is_already_checked):
                 if mime_type == "video":
                     result = await loop.run_in_executor(None, detector.classify_video, file)
                     frames = 0
-                    for pred in result.get("metadata", {}).get("preds", {}).values():
+                    for pred in result.get("preds", {}).values():
                         score += pred.get("unsafe", 0)
                         frames += 1
                     if frames:
@@ -55,8 +57,11 @@ async def sort_function(is_already_checked=True):
     all_files = os.listdir(PATH_TO_SAVE)
     all_files_len = len(all_files)
     middle_index = math.ceil(all_files_len/2)
-    await sort_algorithm(all_files[:middle_index], loop, detector, is_already_checked)
-    await sort_algorithm(all_files[middle_index:], loop, detector, is_already_checked)
+    futures = [asyncio.ensure_future(sort_algorithm(all_files[:middle_index], loop, detector, is_already_checked)),
+               asyncio.ensure_future(sort_algorithm(all_files[middle_index:], loop, detector, is_already_checked))]
+
+    for future in futures:
+        await future
 
 try:
     os.makedirs(f"{PATH_TO_SAVE}/nsfw")
