@@ -4,6 +4,7 @@ import asyncio
 import zipfile
 import mimetypes
 
+import PIL
 from nudenet import NudeClassifier
 
 from sms_settings import *
@@ -30,7 +31,6 @@ async def sort_algorithm(files, loop, detector, is_already_checked):
         if os.path.isfile(file) and not os.path.isdir(file):
             try:
                 mime_type, sub_type = mimetypes.guess_type(file)[0].split("/")
-                print(file, mime_type, sub_type)
             except Exception:
                 continue
             try:
@@ -45,8 +45,11 @@ async def sort_algorithm(files, loop, detector, is_already_checked):
                         score /= frames
 
                 elif mime_type == "image":
-                    result = await loop.run_in_executor(None, detector.classify, file)
-                    score = result.get(file, {}).get("unsafe", 0)
+                    try:
+                        result = await loop.run_in_executor(None, detector.classify, file)
+                        score = result.get(file, {}).get("unsafe", 0)
+                    except PIL.UnidentifiedImageError:
+                        print(f"Bad image detected: {file}")
 
                 elif sub_type in ["x-gzip-compressed", "x-zip-compressed", "x-7z-compressed", "x-rar-compressed"]:
                     with zipfile.ZipFile(file, "r") as zipped:
@@ -61,7 +64,6 @@ async def sort_algorithm(files, loop, detector, is_already_checked):
 
 
 async def sort_function(is_already_checked=True):
-
     loop = asyncio.get_event_loop()
     detector = await loop.run_in_executor(None, NudeClassifier)
 
@@ -74,9 +76,11 @@ async def sort_function(is_already_checked=True):
     for future in futures:
         await future
 
-try:
-    os.makedirs(f"{PATH_TO_SAVE}/nsfw")
-except FileExistsError:
-    print("Dirs already exists")
+if __name__ == "__main__":
+    try:
+        os.makedirs(f"{PATH_TO_SAVE}/nsfw")
+        os.makedirs(f"{PATH_TO_SAVE}/ignored")
+    except FileExistsError:
+        print("Dirs already exists")
 
-asyncio.run(sort_function())
+    asyncio.run(sort_function())
