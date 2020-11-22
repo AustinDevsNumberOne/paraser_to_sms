@@ -1,7 +1,8 @@
 import os
-import asyncio
-import mimetypes
 import math
+import asyncio
+import zipfile
+import mimetypes
 
 from nudenet import NudeClassifier
 
@@ -27,7 +28,11 @@ async def sort_algorithm(files, loop, detector, is_already_checked):
 
         is_already_checked and already_checked.append(file)
         if os.path.isfile(file) and not os.path.isdir(file):
-            mime_type = mimetypes.guess_type(file)[0].split("/")[0]
+            try:
+                mime_type, sub_type = mimetypes.guess_type(file)[0].split("/")
+                print(file, mime_type, sub_type)
+            except Exception:
+                continue
             try:
                 score = 0
                 if mime_type == "video":
@@ -42,6 +47,12 @@ async def sort_algorithm(files, loop, detector, is_already_checked):
                 elif mime_type == "image":
                     result = await loop.run_in_executor(None, detector.classify, file)
                     score = result.get(file, {}).get("unsafe", 0)
+
+                elif sub_type in ["x-gzip-compressed", "x-zip-compressed", "x-7z-compressed", "x-rar-compressed"]:
+                    with zipfile.ZipFile(file, "r") as zipped:
+                        file_names = zipped.namelist()
+                        await loop.run_in_executor(None, zipped.extractall, PATH_TO_SAVE)
+                        await sort_algorithm(file_names, loop, detector, is_already_checked)
 
                 if score and score >= NSFW_SENSITIVE:
                     await move_nsfw(file)
@@ -68,4 +79,4 @@ try:
 except FileExistsError:
     print("Dirs already exists")
 
-asyncio.run(sort_function(is_already_checked=False))
+asyncio.run(sort_function())
