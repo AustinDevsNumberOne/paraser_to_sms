@@ -13,14 +13,13 @@ from content_sort import sort_function
 from sms_settings import *
 
 
-IS_IGNORED_UPLOADED = asyncio.Event()
-IS_IGNORED_UPLOADED.clear()
+IS_FIRST_IGNORED_UPLOADED = asyncio.Event()
+IS_FIRST_IGNORED_UPLOADED.clear()
 
 
 async def update_ignored():
     path = f"{PATH_TO_SAVE}/ignored"
     while True:
-        IS_IGNORED_UPLOADED.clear()
         for file in os.listdir(path):
             file = f"{path}/{file}"
             async with aiofiles.open(file, "rb") as ignored_file:
@@ -28,7 +27,8 @@ async def update_ignored():
                 if ignored_bytes not in ignored:
                     np_res = numpy.frombuffer(ignored_bytes, numpy.uint8)
                     ignored[ignored_bytes] = cv2.imdecode(np_res, cv2.COLOR_BGR2GRAY)
-        IS_IGNORED_UPLOADED.set()
+        if not IS_FIRST_IGNORED_UPLOADED.is_set():
+            IS_FIRST_IGNORED_UPLOADED.set()
         await asyncio.sleep(5)
 
 
@@ -37,7 +37,7 @@ async def check_for_ignoring(img_bytes):
     np_res = numpy.frombuffer(img_bytes, numpy.uint8)
     img = cv2.imdecode(np_res, cv2.COLOR_BGR2GRAY)
     if img is not None:
-        await IS_IGNORED_UPLOADED.wait()
+        await IS_FIRST_IGNORED_UPLOADED.wait()
         for ignored_pic in ignored.values():
             height, weight, *_ = img.shape
             ignored_pic = cv2.resize(ignored_pic, (weight,height))
@@ -45,7 +45,7 @@ async def check_for_ignoring(img_bytes):
             part = partial(structural_similarity, im1=ignored_pic.astype(numpy.float32),
                            im2=img.astype(numpy.float32), multichannel=True)
             score = await loop.run_in_executor(None, part)
-            if score >= 0.8:
+            if score >= 0.7:
                 return True
     return False
 
@@ -98,10 +98,12 @@ async def main():
     for future in futures:
         await future
 
-try:
-    os.makedirs(f"{PATH_TO_SAVE}/nsfw")
-    os.makedirs(f"{PATH_TO_SAVE}/ignored")
-except FileExistsError:
-    print("Dirs already exists, starting")
+if __name__ == "__main__":
+    for directory in [f"{PATH_TO_SAVE}/ignored", f"{PATH_TO_SAVE}/junk", f"{PATH_TO_SAVE}/nsfw",
+                      f"{PATH_TO_SAVE}/text"]:
+        try:
+            os.makedirs(directory)
+        except FileExistsError:
+            print("Dirs already exists")
 
-asyncio.run(main())
+    asyncio.run(main())
